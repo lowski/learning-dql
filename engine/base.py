@@ -1,5 +1,12 @@
 import tkinter
-import typing
+from typing import Tuple, Union
+
+from . import engine
+
+
+class Component:
+    def __init__(self):
+        self.engine: Union[None, 'engine.Engine'] = None
 
 
 class Positionable:
@@ -12,7 +19,7 @@ class Positionable:
         return self.x, self.y
 
     @pos.setter
-    def pos(self, value: typing.Tuple[float, float]):
+    def pos(self, value: Tuple[float, float]):
         self.x, self.y = value
 
     def __str__(self):
@@ -22,11 +29,11 @@ class Positionable:
         return f"Positionable({self.x}, {self.y})"
 
 
-class DrawableComponent:
+class DrawableComponent(Component):
     def draw(self, canvas: tkinter.Canvas):
         raise NotImplementedError("Not implemented")
 
 
-class UpdatableComponent:
+class UpdatableComponent(Component):
     def update(self):
         raise NotImplementedError("Not implemented")
