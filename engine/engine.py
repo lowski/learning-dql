@@ -20,6 +20,7 @@ class Engine:
         self.objects = []
         self.target_fps = target_fps
         self._pressed_keys = set()
+        self._stop = False
 
     def add(self, o: Union[object, list]):
         if isinstance(o, list):
@@ -30,8 +31,8 @@ class Engine:
                 o.engine = self
             self.objects.append(o)
 
-    def mainloop(self):
-        while True:
+    def start(self):
+        while not self._stop:
             frame_start = time.time()
             self.clear()
 
@@ -44,6 +45,13 @@ class Engine:
             sleep_time = 1 / self.target_fps - frame_time
             if sleep_time > 0:
                 sleep(sleep_time)
+        try:
+            self.window.destroy()
+        except Exception as _:
+            pass
+
+    def stop(self):
+        self._stop = True
 
     def remove_object(self, obj):
         self.objects.remove(obj)

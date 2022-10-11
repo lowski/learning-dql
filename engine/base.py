@@ -1,12 +1,10 @@
 import tkinter
-from typing import Tuple, Union
-
-from . import engine
+from typing import Tuple
 
 
 class Component:
     def __init__(self):
-        self.engine: Union[None, 'engine.Engine'] = None
+        self.engine = None
 
 
 class Positionable:
@@ -15,7 +13,7 @@ class Positionable:
         self.y = y
 
     @property
-    def pos(self):
+    def pos(self) -> Tuple[float, float]:
         return self.x, self.y
 
     @pos.setter
