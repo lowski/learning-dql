@@ -29,6 +29,7 @@ class Engine:
         elif o not in self.objects:
             if isinstance(o, Component):
                 o.engine = self
+                o.added(self)
             self.objects.append(o)
 
     def start(self):

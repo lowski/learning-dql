@@ -35,3 +35,13 @@ class DrawableRectangle(DrawableObject):
         canvas.create_rectangle(self.x - self.width / 2, self.y - self.height / 2,
                                 self.x + self.width / 2, self.y + self.height / 2,
                                 fill=self.color)
+
+
+class DrawableLine(DrawableObject):
+    def __init__(self, start, end, color='black'):
+        super().__init__(color, start)
+        self.end = end
+
+    def draw(self, canvas):
+        canvas.create_line(
+            self.x, self.y, self.end[0], self.end[1], fill=self.color)

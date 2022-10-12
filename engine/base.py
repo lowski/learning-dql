@@ -1,10 +1,16 @@
 import tkinter
-from typing import Tuple
+from typing import TYPE_CHECKING, Tuple, Union
+
+if TYPE_CHECKING:
+    from engine.engine import Engine
 
 
 class Component:
     def __init__(self):
-        self.engine = None
+        self.engine: Union[Engine, None] = None
+
+    def added(self, engine):
+        pass
 
 
 class Positionable:

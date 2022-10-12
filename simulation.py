@@ -1,4 +1,6 @@
-from typing import List
+from typing import List, Tuple
+
+import numpy as np
 
 from engine.base import DrawableComponent, UpdatableComponent
 from engine.engine import Engine
@@ -29,6 +31,32 @@ class PlayerController(UpdatableComponent, DrawableComponent):
         self.obj.draw(canvas)
 
 
+class DistanceRay(UpdatableComponent, DrawableComponent):
+    def __init__(self, origin: PhysicsObject, direction: Tuple[float, float], hittables: List[PhysicsObject]):
+        self.origin = origin
+        self.direction = tuple(
+            np.divide(direction, np.linalg.norm(direction)))
+        self._min_distance = -1
+        self.hittables = hittables
+
+    def update(self):
+        origin = self.origin.pos
+
+        self._min_distance = -1
+        for obj in self.hittables:
+            dist = obj.hittable.ray_dist(origin, self.direction)
+            if self._min_distance == -1 or (dist != -1 and dist < self._min_distance):
+                self._min_distance = dist
+
+    def draw(self, canvas):
+        if self._min_distance == -1:
+            return
+        canvas.create_line(self.origin.pos, tuple(np.add(
+            self.origin.pos, np.multiply(self.direction, self._min_distance))), fill='green')
+        canvas.create_text(tuple(np.add(self.origin.pos, np.multiply(
+            self.direction, 25))), text='{:.02f}'.format(self._min_distance), fill='orange', font=('Arial', 10))
+
+
 class HitDetector(UpdatableComponent):
     def __init__(self, player: PhysicsObject, bad_objects: List[PhysicsObject], good_objects: List[PhysicsObject]):
         super().__init__()
@@ -53,7 +81,6 @@ class HitDetector(UpdatableComponent):
 def main():
     engine = Engine()
 
-    # bottom line
     goals = [
         PhysicalRectangle(5, 250, color='yellow', pos=(250, 375)),
     ]
@@ -69,10 +96,31 @@ def main():
     engine.add(borders)
 
     player = PhysicalCircle(10, color='red', pos=(100, 100))
-    engine.add(PlayerController(player))
 
-    hit = HitDetector(player, borders, goals)
+    hit = HitDetector(player, borders, goals)  # type: ignore
     engine.add(hit)
+
+    dist_right = DistanceRay(player, (1, 0), borders)  # type: ignore
+    dist_left = DistanceRay(player, (-1, 0), borders)  # type: ignore
+    dist_up = DistanceRay(player, (0, -1), borders)  # type: ignore
+    dist_down = DistanceRay(player, (0, 1), borders)  # type: ignore
+    dist_up_right = DistanceRay(player, (1, -1), borders)  # type: ignore
+    dist_up_left = DistanceRay(player, (-1, -1), borders)  # type: ignore
+    dist_down_right = DistanceRay(player, (1, 1), borders)  # type: ignore
+    dist_down_left = DistanceRay(player, (-1, 1), borders)  # type: ignore
+
+    engine.add([
+        dist_right,
+        dist_left,
+        dist_up,
+        dist_down,
+        dist_up_right,
+        dist_up_left,
+        dist_down_right,
+        dist_down_left,
+    ])
+
+    engine.add(PlayerController(player))
 
     engine.start()
     print('Score: {}'.format(hit.score))
