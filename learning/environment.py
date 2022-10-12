@@ -40,19 +40,19 @@ class Environment(py_environment.PyEnvironment):
         # terminate episode if agent collided with borders
         for border in self._borders:
             if border.hittable.hit(self._agent.obj.hittable):
-                return ts.termination(np.array([self._state], dtype=np.float32), self._reward)
+                return ts.termination(np.array([self._state], dtype=np.float32), reward=0)
 
         # increase score if the agent collided with goals
+        reward = 0.0
         for goal in self._goals:
             if goal.hittable.hit(self._agent.obj.hittable):
-                self._reward += 1
+                reward += 1.0
 
-        return ts.transition(np.array([self._state], dtype=np.float32), reward=self._reward, discount=1.0)
+        return ts.transition(np.array([self._state], dtype=np.float32), reward=reward, discount=1.0)
 
     def _reset(self) -> ts.TimeStep:
         self._setup_engine()
         self._episode_ended = False
-        self._reward = 0
         return ts.restart(np.array([self._state], dtype=np.float32))
 
     def _setup_engine(self):
@@ -74,7 +74,7 @@ class Environment(py_environment.PyEnvironment):
         ]
         self._agent = Agent(PhysicalCircle(10, color='red', pos=(25, 250)), self._borders)
 
-        self._engine.add(self._agent)
         self._engine.add(self._borders)
         self._engine.add(self._goals)
+        self._engine.add(self._agent)
 
