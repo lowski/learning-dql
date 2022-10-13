@@ -1,6 +1,7 @@
 from tf_agents.environments import tf_py_environment, utils
 from tf_agents.utils import common
 
+import scenes
 from learning import dqn, training
 from learning.environment import Environment
 
@@ -18,11 +19,12 @@ INTERVAL_EVAL = 1000
 
 def main():
     print('Validating environment...')
-    utils.validate_py_environment(Environment(), episodes=5)
+    scene = scenes.simple_corridor
+    utils.validate_py_environment(Environment(scene), episodes=5)
 
     print('Creating environments...')
-    tf_train_env = tf_py_environment.TFPyEnvironment(Environment())
-    tf_eval_env = tf_py_environment.TFPyEnvironment(Environment())
+    tf_train_env = tf_py_environment.TFPyEnvironment(Environment(scene))
+    tf_eval_env = tf_py_environment.TFPyEnvironment(Environment(scene))
 
     print('Creating agent...')
     qnet = dqn.create_dqn(tf_train_env, [100, 50])
