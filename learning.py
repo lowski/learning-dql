@@ -19,13 +19,11 @@ INTERVAL_EVAL = 30
 
 
 def main():
-    print('Validating environment...')
     scene = scenes.simple_corridor
-    utils.validate_py_environment(Environment(scene), episodes=5)
 
     print('Creating environments...')
-    tf_train_env = tf_py_environment.TFPyEnvironment(Environment(scene))
-    tf_eval_env = tf_py_environment.TFPyEnvironment(Environment(scene))
+    tf_train_env = tf_py_environment.TFPyEnvironment(Environment(scene, max_time=100))
+    tf_eval_env = tf_py_environment.TFPyEnvironment(Environment(scene, max_time=100))
 
     print('Creating agent...')
     qnet = dqn.create_dqn(tf_train_env, [100, 50])

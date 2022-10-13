@@ -8,7 +8,7 @@ from learning.scene import Scene
 
 
 def visualize_policy(scene: Scene, policy):
-    env = Environment(scene, True)
+    env = Environment(scene, True, max_time=500)
     tf_env = tf_py_environment.TFPyEnvironment(env)
 
     driver = training.create_tf_driver(

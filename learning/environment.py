@@ -11,7 +11,7 @@ from learning.scene import Scene
 
 
 class Environment(py_environment.PyEnvironment):
-    def __init__(self, scene: Scene, visualize=False):
+    def __init__(self, scene: Scene, visualize=False, max_time=1000):
         super().__init__()
         self._scene = scene
         self._action_spec = array_spec.BoundedArraySpec(
@@ -22,6 +22,8 @@ class Environment(py_environment.PyEnvironment):
 
         self._engine = Engine(enable_ui=self._visualize)
         self._engine.add(self._scene)
+        self._time = 0
+        self._max_time = max_time
 
     def observation_spec(self) -> types.NestedArraySpec:
         return self._observation_spec
@@ -35,6 +37,10 @@ class Environment(py_environment.PyEnvironment):
         return np.array(state, dtype=np.float32)
 
     def _step(self, action: types.NestedArray) -> ts.TimeStep:
+        self._time += 1
+        if self._time >= self._max_time:
+            return ts.termination(self._state, reward=0)
+
         # reset if episode ended
         if self._episode_ended:
             return self._reset()
@@ -56,7 +62,7 @@ class Environment(py_environment.PyEnvironment):
             return ts.termination(self._state, reward=-50)
 
         # increase score if the agent collided with goals
-        reward = 1.0
+        reward = 0.0
         if self._scene.agent_hit_goal:
             reward += 10.0
 
@@ -65,6 +71,7 @@ class Environment(py_environment.PyEnvironment):
     def _reset(self) -> ts.TimeStep:
         self._scene.reset()
         self._episode_ended = False
+        self._time = 0
         return ts.restart(self._state)
 
     def destroy(self):
