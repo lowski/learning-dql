@@ -13,10 +13,11 @@ from learning.agent import Agent
 
 class Environment(py_environment.PyEnvironment):
     def __init__(self):
+        super().__init__()
         self._action_spec = array_spec.BoundedArraySpec(
             shape=(), dtype=np.int32, minimum=0, maximum=4, name='action')
         self._observation_spec = array_spec.BoundedArraySpec(
-            shape=(1, 4), dtype=np.float32, minimum=[0, 0, -10, -10], maximum=[500, 500, 10, 10], name='observation')
+            shape=(4, ), dtype=np.float32, minimum=[0, 0, -10, -10], maximum=[500, 500, 10, 10], name='observation')
 
     def observation_spec(self) -> types.NestedArraySpec:
         return self._observation_spec
@@ -26,7 +27,8 @@ class Environment(py_environment.PyEnvironment):
 
     @property
     def _state(self):
-        return self._agent.observation + list(self._agent.velocity)
+        state = self._agent.observation + list(self._agent.velocity)
+        return np.array(state, dtype=np.float32)
 
     def _step(self, action: types.NestedArray) -> ts.TimeStep:
         # reset if episode ended
@@ -40,7 +42,7 @@ class Environment(py_environment.PyEnvironment):
         # terminate episode if agent collided with borders
         for border in self._borders:
             if border.hittable.hit(self._agent.obj.hittable):
-                return ts.termination(np.array([self._state], dtype=np.float32), reward=0)
+                return ts.termination(self._state, reward=0)
 
         # increase score if the agent collided with goals
         reward = 0.0
@@ -48,12 +50,12 @@ class Environment(py_environment.PyEnvironment):
             if goal.hittable.hit(self._agent.obj.hittable):
                 reward += 1.0
 
-        return ts.transition(np.array([self._state], dtype=np.float32), reward=reward, discount=1.0)
+        return ts.transition(self._state, reward=reward, discount=1.0)
 
     def _reset(self) -> ts.TimeStep:
         self._setup_engine()
         self._episode_ended = False
-        return ts.restart(np.array([self._state], dtype=np.float32))
+        return ts.restart(self._state)
 
     def _setup_engine(self):
         self._engine = Engine()
