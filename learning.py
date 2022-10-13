@@ -21,13 +21,11 @@ def main():
     utils.validate_py_environment(Environment(), episodes=5)
 
     print('Creating environments...')
-    py_env = Environment()
-    py_train_env = Environment()
-    tf_train_env = tf_py_environment.TFPyEnvironment(py_train_env)
+    tf_train_env = tf_py_environment.TFPyEnvironment(Environment())
     tf_eval_env = tf_py_environment.TFPyEnvironment(Environment())
 
     print('Creating agent...')
-    qnet = dqn.create_dqn(py_env, [100, 50])
+    qnet = dqn.create_dqn(tf_train_env, [100, 50])
     agent = dqn.create_dqn_agent(tf_train_env, qnet, learning_rate=LEARNING_RATE)
 
     agent.train = common.function(agent.train)
@@ -38,9 +36,6 @@ def main():
     print('Evaluating agent pre training...')
     reward_pre_training = training.evaluate(tf_eval_env, agent.policy)
     rewards.append(reward_pre_training)
-
-    time_step = py_train_env.reset()
-    print(time_step)
 
     print('Creating replay buffer...')
     replay_buffer = training.create_replay_buffer(tf_train_env, agent, REPLAY_BUFFER_LEN)
@@ -62,7 +57,7 @@ def main():
 
     print('Running training loop...')
     for _ in range(ITERATIONS):
-        time_step, _ = driver.run()
+        driver.run()
 
         experience, _ = next(replay_buffer_iterator)
         loss = agent.train(experience).loss

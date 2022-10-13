@@ -3,9 +3,8 @@ from typing import List
 import tensorflow as tf
 from tf_agents.agents.dqn import dqn_agent
 
-from tf_agents.environments import py_environment, TFPyEnvironment, PyEnvironment
+from tf_agents.environments import TFPyEnvironment, TFEnvironment
 from tf_agents.networks import sequential, network
-from tf_agents.specs import tensor_spec
 
 
 # Define a helper function to create Dense layers configured with the right
@@ -21,8 +20,8 @@ def _create_dense_layer(num_units):
             scale=2.0, mode='fan_in', distribution='truncated_normal'))
 
 
-def create_dqn(env: PyEnvironment, layer_shapes: List[int]):
-    action_tensor_spec = tensor_spec.from_spec(env.action_spec())
+def create_dqn(env: TFEnvironment, layer_shapes: List[int]):
+    action_tensor_spec = env.action_spec()
     num_actions = action_tensor_spec.maximum - action_tensor_spec.minimum + 1
 
     layers = [_create_dense_layer(shape) for shape in layer_shapes]
