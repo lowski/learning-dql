@@ -2,7 +2,7 @@ from typing import Callable
 
 from tf_agents import policies
 from tf_agents.agents.dqn import dqn_agent
-from tf_agents.drivers import py_driver, dynamic_step_driver
+from tf_agents.drivers import py_driver, dynamic_step_driver, dynamic_episode_driver
 from tf_agents.environments import py_environment, TFEnvironment, tf_py_environment
 from tf_agents.policies import py_tf_eager_policy, random_tf_policy, TFPolicy
 from tf_agents.replay_buffers import tf_uniform_replay_buffer
@@ -40,16 +40,26 @@ def create_py_driver(env: py_environment.PyEnvironment, policy, observer,
 
 
 def create_tf_driver(env: TFEnvironment, policy: TFPolicy, observer: Callable,
-                     steps_per_iteration=1) -> dynamic_step_driver.DynamicStepDriver:
+                     num_steps=None, num_episodes=None):
     """
     Create a driver for a TFEnvironment. Uses a DynamicStepDriver which will stop after a specified amount of max steps.
     """
-    return dynamic_step_driver.DynamicStepDriver(
-        env,
-        policy,
-        observers=[observer],
-        num_steps=steps_per_iteration,
-    )
+    assert num_steps is not None or num_episodes is not None
+
+    if num_episodes is not None:
+        return dynamic_episode_driver.DynamicEpisodeDriver(
+            env,
+            policy,
+            observers=[observer],
+            num_episodes=num_episodes,
+        )
+    else:
+        return dynamic_step_driver.DynamicStepDriver(
+            env,
+            policy,
+            observers=[observer],
+            num_steps=num_steps,
+        )
 
 
 def run_random_policy_py_driver(env: py_environment.PyEnvironment, observer, steps):
@@ -66,15 +76,20 @@ def run_random_policy_py_driver(env: py_environment.PyEnvironment, observer, ste
     ).run(env.reset())
 
 
-def run_random_policy_tf_driver(env: TFEnvironment, observer, steps):
+def run_random_policy_tf_driver(env: TFEnvironment, observer, num_steps=None, num_episodes=None):
     create_tf_driver(
         env,
-        random_tf_policy.RandomTFPolicy(
-            env.time_step_spec(),
-            env.action_spec()),
+        get_random_policy(env),
         observer,
-        steps
+        num_steps=num_steps,
+        num_episodes=num_episodes,
     ).run()
+
+
+def get_random_policy(env: TFEnvironment):
+    return random_tf_policy.RandomTFPolicy(
+            env.time_step_spec(),
+            env.action_spec())
 
 
 def create_replay_buffer(env: TFEnvironment, agent: dqn_agent.DqnAgent, max_length=10000):
