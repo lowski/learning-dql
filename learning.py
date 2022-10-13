@@ -14,8 +14,8 @@ REPLAY_BUFFER_LEN = 10000
 COLLECT_STEPS_PER_ITERATION = 1
 REPLAY_BUFFER_INITIAL_STEPS = 100
 
-INTERVAL_LOG = 200
-INTERVAL_EVAL = 1000
+INTERVAL_LOG = 10
+INTERVAL_EVAL = 30
 
 
 def main():
@@ -37,29 +37,26 @@ def main():
 
     rewards = []
 
-    print('Evaluating agent pre training...')
-    reward_pre_training = training.evaluate(tf_eval_env, agent.policy)
-    rewards.append(reward_pre_training)
-
     print('Creating replay buffer...')
     replay_buffer = training.create_replay_buffer(tf_train_env, agent, REPLAY_BUFFER_LEN)
     replay_buffer_observer = replay_buffer.add_batch
     replay_buffer_iterator = iter(replay_buffer.as_dataset(
-        sample_batch_size=1,
+        sample_batch_size=BATCH_SIZE,
         num_steps=2,
     ).prefetch(3))
 
     print('Populating replay buffer...')
-    training.run_random_policy_tf_driver(tf_train_env, replay_buffer_observer, REPLAY_BUFFER_INITIAL_STEPS)
+    training.run_random_policy_tf_driver(tf_train_env, replay_buffer_observer,
+                                         num_episodes=50)
 
+    print('Running training loop...')
     driver = training.create_tf_driver(
         tf_train_env,
         agent.collect_policy,
         observer=replay_buffer_observer,
-        steps_per_iteration=COLLECT_STEPS_PER_ITERATION,
+        num_episodes=2,
     )
 
-    print('Running training loop...')
     for _ in range(ITERATIONS):
         driver.run()
 
