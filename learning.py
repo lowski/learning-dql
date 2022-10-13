@@ -4,6 +4,7 @@ from tf_agents.utils import common
 import scenes
 from learning import dqn, training
 from learning.environment import Environment
+from learning.visualize import visualize_policy
 
 LEARNING_RATE = 0.001
 BATCH_SIZE = 64
@@ -29,6 +30,7 @@ def main():
     print('Creating agent...')
     qnet = dqn.create_dqn(tf_train_env, [100, 50])
     agent = dqn.create_dqn_agent(tf_train_env, qnet, learning_rate=LEARNING_RATE)
+    visualize_policy(scene, agent.policy)
 
     agent.train = common.function(agent.train)
     agent.train_step_counter.assign(0)
@@ -73,6 +75,7 @@ def main():
             reward = training.evaluate(tf_eval_env, agent.policy)
             print('step = {} | Average Reward = {}'.format(step, reward))
             rewards.append(reward)
+            visualize_policy(scene, agent.policy)
 
     print(rewards)
 
