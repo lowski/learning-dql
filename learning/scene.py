@@ -6,12 +6,13 @@ from learning.agent import Agent
 
 
 class Scene(UpdatableComponent, DrawableComponent):
-    def __init__(self, borders, goals, starting_pos):
+    def __init__(self, borders, goals, starting_pos, num_rays=2):
         super().__init__()
         self._borders = borders
         self._goals = goals
         self._starting_pos = starting_pos
-        self._agent = Agent(PhysicalCircle(10, color='red', pos=self._starting_pos), self._borders)
+        self._num_rays = num_rays
+        self._agent = Agent(PhysicalCircle(10, color='red', pos=self._starting_pos), self._borders, num_rays=self._num_rays)
         self.reset()
 
     def update(self):
@@ -25,7 +26,7 @@ class Scene(UpdatableComponent, DrawableComponent):
                 x.draw(canvas)
 
     def reset(self):
-        self._agent = Agent(PhysicalCircle(10, color='red', pos=self._starting_pos), self._borders)
+        self._agent = Agent(PhysicalCircle(10, color='red', pos=self._starting_pos), self._borders, num_rays=self._num_rays)
 
     @property
     def agent(self):

@@ -12,6 +12,16 @@ def angle(u: np.ndarray, v: Union[np.ndarray, None] = None) -> float:
     return np.degrees(np.arccos(np.dot(u, v) / (np.linalg.norm(u) * np.linalg.norm(v))))
 
 
+def rotation_matrix(rad):
+    rad *= np.pi
+    c, s = np.cos(rad), np.sin(rad)
+    return np.array([[c, -s], [s, c]])
+
+
+def rotate(vec, rad):
+    return np.dot(rotation_matrix(rad), vec).round(decimals=5)
+
+
 def ray_line_intersection(origin: Tuple[float, float], direction: Tuple[float, float], line: Tuple[Tuple[float, float], Tuple[float, float]]) -> Union[None, Tuple[float, float]]:
     """
     Returns the point of intersection between a line and a ray.

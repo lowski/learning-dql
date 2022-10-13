@@ -17,4 +17,5 @@ simple_corridor = Scene(
         PhysicalRectangle(2, 210, color='yellow', pos=(450, 250)),
     ],
     starting_pos=(25, 250),
+    num_rays=2,
 )

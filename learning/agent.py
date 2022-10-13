@@ -1,26 +1,29 @@
 import typing
 
+import numpy as np
+
 from engine.base import UpdatableComponent, DrawableComponent
 from engine.movable_addon import MovableAddon
 from engine.physics_object import PhysicsObject
+from engine.util import rotate
 
 
 class Agent(UpdatableComponent, DrawableComponent):
-    def __init__(self, obj: PhysicsObject, hittables: typing.List[PhysicsObject]):
+    def __init__(self, obj: PhysicsObject, hittables: typing.List[PhysicsObject], num_rays=2):
         super().__init__()
         self.movable = MovableAddon(obj)
         self.obj = obj
         self.hittables = hittables
-        self._rays = [(0, -1), (0, 1)]
+        self.rays = [rotate((0, -1), x) for x in np.linspace(0, 2, num=num_rays, endpoint=False)]
 
     @property
     def observation(self) -> typing.List[float]:
         """
-        Return the observation of the agent. This will be the distance in the direction of self._rays.
+        Return the observation of the agent. This will be the distance in the direction of self.rays.
         """
         distances = []
 
-        for ray in self._rays:
+        for ray in self.rays:
             min_dist = -1
             for obj in self.hittables:
                 dist = obj.hittable.ray_dist(self.obj.pos, ray)
