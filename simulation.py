@@ -2,11 +2,11 @@ from typing import List, Tuple
 
 import numpy as np
 
+import scenes
 from engine.base import DrawableComponent, UpdatableComponent
 from engine.engine import Engine
 from engine.movable_addon import MovableAddon
-from engine.physics_object import (PhysicalCircle, PhysicalRectangle,
-                                   PhysicsObject)
+from engine.physics_object import PhysicsObject
 
 
 class PlayerController(UpdatableComponent, DrawableComponent):
@@ -79,51 +79,16 @@ class HitDetector(UpdatableComponent):
 
 
 def main():
-    engine = Engine()
+    scene = scenes.simple_corridor
 
-    goals = [
-        PhysicalRectangle(5, 250, color='yellow', pos=(250, 375)),
-    ]
-    engine.add(goals)
-
-    borders = [
-        PhysicalRectangle(500, 10, color='black', pos=(250, 5)),
-        PhysicalRectangle(500, 10, color='black', pos=(250, 495)),
-        PhysicalRectangle(10, 500, color='black', pos=(5, 250)),
-        PhysicalRectangle(10, 500, color='black', pos=(495, 250)),
-        PhysicalRectangle(250, 250, color='black', pos=(250, 250)),
-    ]
-    engine.add(borders)
-
-    player = PhysicalCircle(10, color='red', pos=(100, 100))
-
-    hit = HitDetector(player, borders, goals)  # type: ignore
-    engine.add(hit)
-
-    dist_right = DistanceRay(player, (1, 0), borders)  # type: ignore
-    dist_left = DistanceRay(player, (-1, 0), borders)  # type: ignore
-    dist_up = DistanceRay(player, (0, -1), borders)  # type: ignore
-    dist_down = DistanceRay(player, (0, 1), borders)  # type: ignore
-    dist_up_right = DistanceRay(player, (1, -1), borders)  # type: ignore
-    dist_up_left = DistanceRay(player, (-1, -1), borders)  # type: ignore
-    dist_down_right = DistanceRay(player, (1, 1), borders)  # type: ignore
-    dist_down_left = DistanceRay(player, (-1, 1), borders)  # type: ignore
-
+    engine = Engine(enable_ui=True)
+    engine.add(scene)
     engine.add([
-        dist_right,
-        dist_left,
-        dist_up,
-        dist_down,
-        dist_up_right,
-        dist_up_left,
-        dist_down_right,
-        dist_down_left,
+        DistanceRay(scene.agent.obj, x, scene._borders) for x in scene.agent.rays
     ])
-
-    engine.add(PlayerController(player))
+    engine.add(PlayerController(scene.agent.obj))
 
     engine.start()
-    print('Score: {}'.format(hit.score))
 
 
 if __name__ == "__main__":
